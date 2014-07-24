@@ -1,0 +1,24 @@
+{
+    "name": "rjakes/rjakessimplefm",
+    "type": "library",
+    "description": "Wrapper for soliant/simplefm",
+    "keywords": [
+        "FileMaker",
+        "adapter"
+    ],
+    "homepage": "http://github.com/rjakes/SimpleFM",
+    "license": "MIT",
+    "authors": [
+        {"name": "Roger Jacques", "email": "roger@rjakes.com"}
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "soliantconsulting/simplefm": "2.0.0beta12"
+
+    },
+    "autoload": {
+        "psr-0": {
+            "rjakes\\": "library/"
+        }
+    }
+}
