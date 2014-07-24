@@ -1,6 +1,6 @@
 # RjakesSimpleFM
 
- Extends Jeremiah Small's SimpleFM class for communicating with FileMaker Server
+ Wrapper/facade that extends Jeremiah Small's SimpleFM class for communicating with FileMaker Server
  
  https://github.com/soliantconsulting/SimpleFM/tree/master/library/Soliant
  

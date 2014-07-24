@@ -19,7 +19,7 @@ namespace rjakes\RjakesSimpleFM;
 use \Soliant\SimpleFM\Adapter;
 
 
-class RjakesSimpleFM   extends Adapter
+class Facade   extends Adapter
 {
 
     function delete($view, $rec_id){
