@@ -11,5 +11,5 @@ namespace rjakes\RjakesSimpleFM;
 
 final class Version
 {
-    const VERSION = '0.0.0alpha0';
+    const VERSION = '0.0.0alpha1';
 }

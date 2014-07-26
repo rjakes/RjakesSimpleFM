@@ -17,44 +17,120 @@
 namespace rjakes\RjakesSimpleFM;
 
 use \Soliant\SimpleFM\Adapter;
+use \Soliant\SimpleFM\Exception as Exception;
 
 
 class Facade   extends Adapter
 {
 
-    function delete($view, $rec_id){
+    protected $defaultLayoutName   = '';
+    protected $whereCriteria       = array();
+    protected $sortCriteria        = array();
+    protected $scriptName          = '';
+    protected $scriptParameters    = array();
 
-        $this->setLayoutname($view);
-        $command_array['-delete'] = '';
-        $command_array['-recid'] = $rec_id;
-        $this->setCommandarray($command_array);
+    public function setDefaultLayoutName($fmLayout)
+    {
+        $this->defaultLayoutName = $fmLayout;
+        return $this;
+    }
+
+    public function getDefaultLayoutName()
+    {
+        return $this->defaultLayoutname;
+    }
+
+    public function setLayoutName($fmLayout='')
+    {
+        if($fmLayout !== '')
+        {
+            $this->layoutname = $fmLayout;
+        }else{
+            $this->layoutname = $this->defaultLayoutName;
+        }
+        if($this->layoutname === '')
+        {
+            throw new Exception\ErrorException('The FileMaker layout name as not been specified.');
+        }
+
+        return $this;
+    }
+
+
+    public function addWhereCriteria($field, $value, $op='')
+    {
+        $element = count($this->whereCriteria);
+        $whereField = urlencode($field);
+        $whereValue = urlencode($value);
+        $this->whereCriteria[$element] = array('field'=>$whereField, 'value'=>$whereValue, 'op'=>$op );
+
+        return $this;
+    }
+
+    public function getWhereCriteria()
+    {
+      return $this->whereCriteria;
+
+    }
+
+    public function setWhereCriteria($whereCriteria)
+    {
+        $this->whereCriteria = $whereCriteria;
+
+        return $this;
+    }
+
+
+    public function addSortCriteria($field, $order='')
+    {
+
+        $element = count($this->sortCriteria);
+        $sortPrecedence = $element+1;
+
+        $sortField = '-sortfield.'.$sortPrecedence.'='.urlencode($field);
+
+        if($order !== '')
+        {
+            $sortOrder = '-sortorder.'.$sortPrecedence.'='.($order == 'descend'? 'descend' : 'ascend');
+        }else{
+            $sortOrder = '';
+        }
+
+        $this->sortCriteria[$element] = array('field'=>$sortField, 'order'=>$sortOrder);
+        return $this;
+    }
+
+    public function setSortCriteria($sortCriteria)
+    {
+        $this->sortCriteria = $sortCriteria;
+        return $this;
+    }
+
+    public function getSortCriteria()
+    {
+        return $this->sortCriteria;
+    }
+
+
+    public function delete($recId, $fmLayout='')
+    {
+
+        $this->setLayoutName($fmLayout);
+        $commandArray['-delete'] = '';
+        $commandArray['-recid'] = $recId;
+        $this->setCommandarray($commandArray);
 
         $result = $this->execute();
 
         return $result;
     }
 
-    function duplicate($view, $rec_id){
-
-        $this->setLayoutname($view);
-        $command_array['-dup'] = '';
-        $command_array['-recid'] = $rec_id;
-        $this->setCommandarray($command_array);
-
-        $result = $this->execute();
-
-        return $result;
-
-    }
-
-    function update($view, $rec_id, $value_array){
-
-        $this->setLayoutname($view);
-
-        $command_array = $value_array;
-        $command_array['-edit'] = "";
-        $command_array['-recid'] = $rec_id;
-        $this->setCommandarray($command_array);
+    public function duplicate($recId, $fmLayout='')
+    {
+        $this->setLayoutName($fmLayout);
+        $commandArray['-dup'] = '';
+        $commandArray['-recid'] = $recId;
+        $this->setCommandarray($commandArray);
 
         $result = $this->execute();
 
@@ -62,9 +138,26 @@ class Facade   extends Adapter
 
     }
 
-    function select($view, $where, $sort=NULL, $max=NULL, $skip=NULL, $script=NULL){
+    public function update($recId, $valueArray, $fmLayout='')
+    {
 
-        $this->setLayoutname($view);
+        $this->setLayoutName($fmLayout);
+
+        $commandArray = $valueArray;
+        $commandArray['-edit'] = "";
+        $commandArray['-recid'] = $recId;
+        $this->setCommandarray($commandArray);
+
+        $result = $this->execute();
+
+        return $result;
+
+    }
+
+    public function select($max='', $skip='', $fmLayout='')
+    {
+
+        $this->setLayoutName($fmLayout);
         $this->commandstring = '';
         $this->commandstring .= (! empty($max) ? '-max='.$max : '');
         $amp = empty($this->commandstring) ? '' : '&';
@@ -72,18 +165,21 @@ class Facade   extends Adapter
         $amp = empty($this->commandstring) ? '' : '&';
 
 
-        if(!empty($where->criteria)){
+        if(!empty($this->whereCriteria))
+        {
 
-            foreach ($where->criteria as $criteria_array){
+            foreach ($this->whereCriteria as $criteriaArray)
+            {
 
-                $field = $criteria_array['field'];
-                $value = $criteria_array['value'];
-                $op = $criteria_array['op'];
+                $field = $criteriaArray['field'];
+                $value = $criteriaArray['value'];
+                $op = $criteriaArray['op'];
 
                 $this->commandstring .= $amp. $field.'='. $value;
                 $amp = '&';
 
-                if(! empty($op)){
+                if(! empty($op))
+                {
                 $this->commandstring .=  '&'.$field.'.op='.$op;
                 }
             }
@@ -92,40 +188,42 @@ class Facade   extends Adapter
             $this->commandstring .= $amp .  '-findall';
         }
 
-        if(!empty($sort->criteria)){
-            foreach ($sort->criteria as $criteria_array){
+        if(!empty($this->sortCriteria))
+        {
+            foreach ($this->sortCriteria as $criteriaArray)
+            {
 
-                $field = $criteria_array['field'];
-                $order = $criteria_array['order'];
+                $field = $criteriaArray['field'];
+                $order = $criteriaArray['order'];
 
                 $this->commandstring .= '&'. $field;
 
-                if(! empty($order)){
+                if(! empty($order))
+                {
                     $this->commandstring .=  '&'.$order;
                 }
             }
         }
 
-        if(!empty($script->script_name)){
-
-          $this->commandstring .= $script->getCommand();
+        if(!empty($scriptName))
+        {
+          $this->commandstring .= $this->makeScriptCommand();
         }
-
 
         $result = $this->execute();
 
         return $result;
     }
 
-    function insert($view, $value_array){
+    public function insert($valueArray, $fmLayout='')
+    {
+        $this->setLayoutName($fmLayout);
 
-        $this->setLayoutname($view);
+        $commandArray = $valueArray;
 
-        $command_array = $value_array;
+        $commandArray['-new'] = "";
 
-        $command_array['-new'] = "";
-
-        $this->setCommandarray($command_array);
+        $this->setCommandarray($commandArray);
 
         $result = $this->execute();
 
@@ -133,125 +231,81 @@ class Facade   extends Adapter
 
     }
 
-
-    function serverScript($view, $script){
-
-        $this->setLayoutname($view);
-		$this->commandstring = '-findany';
-        $this->commandstring .= $script->getCommand();
-        $result = $this->execute();
-
-        return $result;
-
-    }
-
-}
-
-
-class FMP_where{
-
-    public $criteria = array();
-
-    public function __construct($field=NULL, $value=NULL, $op=NULL){
-        if ( !empty($field)) {
-            self::add($field, $value, $op);
-        }
-
-    }
-
-    public function add($field, $value, $op=NULL){
-
-        $element = count($this->criteria);
-        $where_field = urlencode($field);
-        $where_value = urlencode($value);
-        $this->criteria[$element] = array('field'=>$where_field, 'value'=>$where_value, 'op'=>$op );
-
+    public function setScriptName($scriptName)
+    {
+        $this->scriptName = $scriptName;
         return $this;
-    }
-
-    public function get(){
-        return $this;
-    }
-
-}
-
-class FMP_sort{
-
-    public $criteria = array();
-
-    public function __construct($field=NULL, $order=NULL){
-        if ( !empty($field)) {
-            self::add($field, $order);
-        }
 
     }
 
-    public function add($field, $order=NULL){
-
-        $element = count($this->criteria);
-        $sort_precedence = $element+1;
-
-        $sort_field = '-sortfield.'.$sort_precedence.'='.urlencode($field);
-
-        if(! empty($order)){
-            $sort_order = '-sortorder.'.$sort_precedence.'='.($order == 'descend'? 'descend' : 'ascend');
-        }else{
-            $sort_order = '';
-        }
-
-        $this->criteria[$element] = array('field'=>$sort_field, 'order'=>$sort_order);
-
-        return $this;
-    }
-
-    public function get(){
-        return $this;
-    }
-
-}
-
-class FMP_script{
-
-    public $script_name = '';
-
-    public $script_parameters = array();
-
-    public function __construct($name){
-
-        $this->script_name = $name;
+    public function getScriptName()
+    {
+        return $this->scriptName;
 
     }
 
-    public function addParameter($name, $value){
-        $element = count($this->script_parameters);
+    public function addScriptParameter($name, $value)
+    {
+        $element = count($this->scriptParameters);
 
-        $parameter_name = rawurlencode($name);
-        $parameter_value = rawurlencode(str_replace( '"'  ,   '\"',  $value ));
+        $parameterName = rawurlencode($name);
+        $parameterValue = rawurlencode(str_replace( '"'  ,   '\"',  $value ));
 
-        if(! empty($parameter_name)){
-            $this->script_parameters[$element] = array('name'=>$parameter_name, 'value'=>$parameter_value);
+        if(! empty($parameterName))
+        {
+            $this->scriptParameters[$element] = array('name'=>$parameterName, 'value'=>$parameterValue);
         }
 
         return $this;
     }
 
-    public function get(){
+    public function setScriptParameters($scriptParameters)
+    {
+
+        $this->scriptParameters = $scriptParameters;
         return $this;
     }
 
+    public function getScriptParameters()
+    {
+        return $this->scriptParameters;
+    }
 
-    public function getCommand(){
-        $command = '&-script='. urlencode($this->script_name);
 
-        if(! empty($this->script_parameters)){
+
+    public function makeScriptCommand()
+    {
+        $command = '&-script='. urlencode($this->scriptName);
+
+        if(! empty($this->scriptParameters))
+        {
             $command .= '&-script.param=';
-            foreach($this->script_parameters as $script_parameter){
+            foreach($this->scriptParameters as $scriptParameter)
+            {
 
-                $command .= '$'.$script_parameter['name'].'="'.$script_parameter['value'].'" ; ';
+                $command .= '$'.$scriptParameter['name'].'="'.$scriptParameter['value'].'" ; ';
             }
         }
 
         return $command;
+    }
+
+
+    public function executeFmScript($script = '', $fmLayout='')
+    {
+
+        if($script !== '')
+        {
+         $this->setScriptName($script);
+        }
+        $this->setLayoutName($fmLayout);
+
+		$this->commandstring = '-findany';
+        $this->commandstring .= $this->makeScriptCommand();
+        $result = $this->execute();
+
+        return $result;
+
     }
 
 }
