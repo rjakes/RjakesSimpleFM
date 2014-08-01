@@ -1,7 +1,7 @@
 {
     "name": "rjakes/rjakessimplefm",
     "type": "library",
-    "description": "Wrapper for soliant/simplefm",
+    "description": "Wrapper for soliantconsulting/simplefm",
     "keywords": [
         "FileMaker",
         "adapter"
