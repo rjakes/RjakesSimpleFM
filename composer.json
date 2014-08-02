@@ -11,9 +11,10 @@
     "authors": [
         {"name": "Roger Jacques", "email": "roger@rjakes.com"}
     ],
+    "minimum-stability": "beta",
     "require": {
         "php": ">=5.3.0",
-        "soliantconsulting/simplefm": "2.0.0beta12"
+        "soliantconsulting/simplefm": "2.*"
 
     },
     "autoload": {
