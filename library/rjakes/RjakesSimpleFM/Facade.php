@@ -198,6 +198,19 @@ class Facade   extends Adapter
     {
         return $this->sortCriteria;
     }
+    /**
+     * Fetch a record using its recid
+     * @param string $recid
+     * @param string $fmLayout - optional when layout has been set w setDefaultLayout
+     * *
+     */
+    public function getRecord($recid, $fmLayout='')
+    {
+        $this->setLayoutName($fmLayout);
+        $this->commandstring = '-recid='.$recid . '&-find';
+        $result = $this->execute();
+        return $result;
+    }
 
     /**
      * CRUD function to delete a record.

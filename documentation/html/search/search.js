@@ -7,20 +7,10 @@
 
 var indexSectionsWithContent =
 {
-  0: "adefgimrstuv",
-  1: "fv",
-  2: "r",
-  3: "adegimsu",
-  4: "t"
 };
 
 var indexSectionNames =
 {
-  0: "all",
-  1: "classes",
-  2: "namespaces",
-  3: "functions",
-  4: "pages"
 };
 
 function convertToId(search)
