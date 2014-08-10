@@ -335,6 +335,7 @@ class Facade   extends Adapter
         }
 
         $result = $this->execute();
+        $this->setWhereCriteria(Array());
 
         return $result;
     }
