@@ -90,6 +90,21 @@ class Facade   extends Adapter
 
 
     /**
+     * Fetch a record using its recid
+     * @param string $recid
+     * @param string $fmLayout - optional if the default layout has been set w setDefaultLayout
+     * *
+     */
+    public function getRecord($recid, $fmLayout='')
+    {
+        $this->setLayoutName($fmLayout);
+        $this->commandstring = '-recid='.$recid . '&-find';
+        $result = $this->execute();
+        return $result;
+    }
+
+
+    /**
      * Add a single where/find criteria.
      * @param string $field
      * @param string $value
@@ -122,9 +137,10 @@ class Facade   extends Adapter
     /**
      * Return the multi dimensional array of sort criteria
      * @return array ( array($field, $value, $operator))
-     */public function getWhereCriteria()
+     */
+    public function getWhereCriteria()
     {
-      return $this->whereCriteria;
+        return $this->whereCriteria;
 
     }
 
@@ -198,19 +214,6 @@ class Facade   extends Adapter
     {
         return $this->sortCriteria;
     }
-    /**
-     * Fetch a record using its recid
-     * @param string $recid
-     * @param string $fmLayout - optional when layout has been set w setDefaultLayout
-     * *
-     */
-    public function getRecord($recid, $fmLayout='')
-    {
-        $this->setLayoutName($fmLayout);
-        $this->commandstring = '-recid='.$recid . '&-find';
-        $result = $this->execute();
-        return $result;
-    }
 
     /**
      * CRUD function to delete a record.
@@ -224,6 +227,11 @@ class Facade   extends Adapter
         $commandArray['-delete'] = '';
         $commandArray['-recid'] = $recId;
         $this->setCommandarray($commandArray);
+
+        if(!empty($this->scriptName))
+        {
+            $this->commandstring .= $this->makeScriptCommand();
+        }
 
         $result = $this->execute();
         return $result;
@@ -242,6 +250,11 @@ class Facade   extends Adapter
         $commandArray['-dup'] = '';
         $commandArray['-recid'] = $recId;
         $this->setCommandarray($commandArray);
+
+        if(!empty($this->scriptName))
+        {
+            $this->commandstring .= $this->makeScriptCommand();
+        }
 
         $result = $this->execute();
 
@@ -264,6 +277,11 @@ class Facade   extends Adapter
         $commandArray['-edit'] = "";
         $commandArray['-recid'] = $recId;
         $this->setCommandarray($commandArray);
+
+        if(!empty($this->scriptName))
+        {
+            $this->commandstring .= $this->makeScriptCommand();
+        }
 
         $result = $this->execute();
 
@@ -304,7 +322,7 @@ class Facade   extends Adapter
 
                 if(! empty($op))
                 {
-                $this->commandstring .=  '&'.$field.'.op='.$op;
+                    $this->commandstring .=  '&'.$field.'.op='.$op;
                 }
             }
             $this->commandstring .= '&-find';
@@ -329,9 +347,9 @@ class Facade   extends Adapter
             }
         }
 
-        if(!empty($scriptName))
+        if(!empty($this->scriptName))
         {
-          $this->commandstring .= $this->makeScriptCommand();
+            $this->commandstring .= $this->makeScriptCommand();
         }
 
         $result = $this->execute();
@@ -355,6 +373,11 @@ class Facade   extends Adapter
         $commandArray['-new'] = "";
 
         $this->setCommandarray($commandArray);
+
+        if(!empty($this->scriptName))
+        {
+            $this->commandstring .= $this->makeScriptCommand();
+        }
 
         $result = $this->execute();
 
@@ -461,11 +484,11 @@ class Facade   extends Adapter
 
         if($script !== '')
         {
-         $this->setScriptName($script);
+            $this->setScriptName($script);
         }
         $this->setLayoutName($fmLayout);
 
-		$this->commandstring = '-findany';
+        $this->commandstring = '-findany';
         $this->commandstring .= $this->makeScriptCommand();
         $result = $this->execute();
 
