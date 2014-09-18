@@ -495,5 +495,19 @@ class Facade   extends Adapter
         return $result;
 
     }
+    
+    /**
+     * Fetch layout metadata
+     * @param string $fmLayout Optional if $defaultLayoutName is set.
+     * @return array([url] [error] [errortext] [errortype] [build] [layout] [valuelists] => array)
+     */
+    public function getLayout($fmLayout = '')
+    {
+        $this->setLayoutName($fmLayout);
+        $this->useLayoutGrammar();
+        $this->commandstring = '-view';
+        $result = $this->execute();
+        return $result;
+    }
 
 }
